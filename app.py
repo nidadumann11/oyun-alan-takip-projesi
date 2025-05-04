@@ -30,15 +30,33 @@ class OyunTakipApp:
         self.parent_entry = tk.Entry(root, font=("Helvetica", 12))
         self.parent_entry.grid(row=2, column=1, padx=10, pady=10, sticky="w")
 
+        # Kalış süresi seçimi
+        self.duration_label = tk.Label(root, text="Kalış Süresi:", font=("Helvetica", 12), bg="#F0F0F0")
+        self.duration_label.grid(row=3, column=0, padx=10, pady=10, sticky="e")
+
+        self.duration_var = tk.StringVar(value="30 dk")  # Varsayılan olarak 30 dk seçilmiş
+
+        # 30 dk seçeneği
+        self.radio_30 = tk.Radiobutton(root, text="30 dk", variable=self.duration_var, value="30 dk",
+                                       font=("Helvetica", 12), bg="#F0F0F0", activebackground="#F0F0F0",
+                                       indicatoron=True)  # selectcolor kaldırıldı
+        self.radio_30.grid(row=3, column=1, padx=5, pady=10, sticky="w")
+
+        # 60 dk seçeneği
+        self.radio_60 = tk.Radiobutton(root, text="60 dk", variable=self.duration_var, value="60 dk",
+                                       font=("Helvetica", 12), bg="#F0F0F0", activebackground="#F0F0F0",
+                                       indicatoron=True)  # selectcolor kaldırıldı
+        self.radio_60.grid(row=3, column=2, padx=5, pady=10, sticky="w")
+
         # Başlat ve bitir butonları
         self.start_button = tk.Button(root, text="Başlat", command=self.baslat, bg="#4CAF50", fg="white", font=("Helvetica", 12))
-        self.start_button.grid(row=3, column=0, padx=10, pady=10, sticky="e")
+        self.start_button.grid(row=4, column=0, padx=10, pady=10, sticky="e")
         self.stop_button = tk.Button(root, text="Bitir", command=self.bitir, bg="#FF6347", fg="white", font=("Helvetica", 12))
-        self.stop_button.grid(row=3, column=1, padx=10, pady=10, sticky="w")
+        self.stop_button.grid(row=4, column=1, padx=10, pady=10, sticky="w")
 
         # Çocuk listesi (Treeview)
         self.child_tree = ttk.Treeview(root, columns=("name", "parent", "start_time"), show="headings", height=10)
-        self.child_tree.grid(row=4, column=0, columnspan=3, pady=10)
+        self.child_tree.grid(row=5, column=0, columnspan=3, pady=10)
         self.child_tree.heading("name", text="Çocuk Adı")
         self.child_tree.heading("parent", text="Ebeveyn Numarası")
         self.child_tree.heading("start_time", text="Giriş Saati")
@@ -48,13 +66,13 @@ class OyunTakipApp:
 
         # Kayıtları ve geliri göster butonları
         self.show_records_button = tk.Button(root, text="Kayıtları Göster", command=self.kayitlari_goster, bg="#2196F3", fg="white", font=("Helvetica", 12))
-        self.show_records_button.grid(row=5, column=0, padx=10, pady=5, sticky="e")
+        self.show_records_button.grid(row=6, column=0, padx=10, pady=5, sticky="e")
         self.show_income_button = tk.Button(root, text="Geliri Göster", command=self.geliri_goster, bg="#FF9800", fg="white", font=("Helvetica", 12))
-        self.show_income_button.grid(row=5, column=1, padx=10, pady=5, sticky="w")
+        self.show_income_button.grid(row=6, column=1, padx=10, pady=5, sticky="w")
 
         # Durum etiketi
         self.status_label = tk.Label(root, text="", font=("Helvetica", 14), fg="blue", bg="#F0F0F0")
-        self.status_label.grid(row=6, column=0, columnspan=3, pady=10)
+        self.status_label.grid(row=7, column=0, columnspan=3, pady=10)
 
     def center_window(self, width, height):
         """Pencereyi ekrana ortalamak için bir yardımcı fonksiyon."""
@@ -67,6 +85,8 @@ class OyunTakipApp:
     def baslat(self):
         child_name = self.name_entry.get().strip()
         parent_number = self.parent_entry.get().strip()
+        duration = self.duration_var.get()  # Seçilen kalış süresi
+
         if not child_name or not parent_number:
             self.status_label.config(text="Çocuk adı veya ebeveyn numarası boş olamaz!")
             return
@@ -76,9 +96,9 @@ class OyunTakipApp:
             return
 
         start_time = datetime.now()
-        self.start_times[child_name] = (parent_number, start_time)
+        self.start_times[child_name] = (parent_number, start_time, duration)
         self.child_tree.insert("", "end", values=(child_name, parent_number, start_time.strftime('%H:%M')))
-        self.status_label.config(text=f"{child_name} için takip başladı.")
+        self.status_label.config(text=f"{child_name} için takip başladı. Kalış Süresi: {duration}")
 
     def bitir(self):
         selected_item = self.child_tree.selection()
@@ -93,18 +113,18 @@ class OyunTakipApp:
             self.status_label.config(text="Bu çocuk için başlangıç zamanı bulunamadı!")
             return
 
-        parent_number, start_time = self.start_times.pop(child_name)
+        parent_number, start_time, duration = self.start_times.pop(child_name)
         end_time = datetime.now()
-        duration = end_time - start_time
-        minutes = duration.total_seconds() / 60
+        duration_actual = end_time - start_time
+        minutes = duration_actual.total_seconds() / 60
         cost = round(minutes * 2, 2)  # Dakika başına 2 birim ücret
         self.total_income += cost
-        self.status_label.config(text=f"{child_name} için süre: {duration}, Ücret: {cost} TL")
+        self.status_label.config(text=f"{child_name} için süre: {duration_actual}, Ücret: {cost} TL")
 
         # Kayıtları CSV'ye yaz
         with open('game_log.csv', mode='a', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow([child_name, parent_number, start_time, end_time, duration, cost])
+            writer.writerow([child_name, parent_number, start_time, end_time, duration_actual, cost])
             
         # Listeden kaldır
         self.child_tree.delete(selected_item)
