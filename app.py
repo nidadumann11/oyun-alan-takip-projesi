@@ -12,6 +12,25 @@ class OyunTakipApp:
         self.start_times = {}  # Çocuk adı ve başlangıç zamanlarını tutmak için
         self.total_income = 0  # Toplam gelir
 
+        # Menü çubuğu ekle
+        self.menu_bar = tk.Menu(self.root)
+        self.root.config(menu=self.menu_bar)
+
+        # Jeton menüsü
+        self.token_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.token_menu.add_command(label="Jeton", command=self.jeton_islemi)
+        self.menu_bar.add_cascade(label="Jeton", menu=self.token_menu)
+
+        # Günsonu raporu menüsü
+        self.report_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.report_menu.add_command(label="Günsonu Raporu Al", command=self.gunsonu_raporu)
+        self.menu_bar.add_cascade(label="Günsonu Raporu", menu=self.report_menu)
+
+        # Ayarlar menüsü (en sona taşındı)
+        self.settings_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.settings_menu.add_command(label="Ayarlar", command=self.ayarlar_islemi)
+        self.menu_bar.add_cascade(label="Ayarlar", menu=self.settings_menu)
+
         # Pencereyi ekrana ortala
         self.center_window(700, 600)  # Genişlik: 700, Yükseklik: 600
 
@@ -39,14 +58,14 @@ class OyunTakipApp:
         # 30 dk seçeneği
         self.radio_30 = tk.Radiobutton(root, text="30 dk", variable=self.duration_var, value="30 dk",
                                        font=("Helvetica", 12), bg="#F0F0F0", activebackground="#F0F0F0",
-                                       indicatoron=True)  # selectcolor kaldırıldı
+                                       indicatoron=True)
         self.radio_30.grid(row=3, column=1, padx=5, pady=10, sticky="w")
 
         # 60 dk seçeneği
         self.radio_60 = tk.Radiobutton(root, text="60 dk", variable=self.duration_var, value="60 dk",
                                        font=("Helvetica", 12), bg="#F0F0F0", activebackground="#F0F0F0",
-                                       indicatoron=True)  # selectcolor kaldırıldı
-        self.radio_60.grid(row=3, column=2, padx=5, pady=10, sticky="w")
+                                       indicatoron=True)
+        self.radio_60.grid(row=3, column=1, padx=5, pady=10, sticky="e")
 
         # Başlat ve bitir butonları
         self.start_button = tk.Button(root, text="Başlat", command=self.baslat, bg="#4CAF50", fg="white", font=("Helvetica", 12))
@@ -169,6 +188,18 @@ class OyunTakipApp:
                 self.status_label.config(text=f"Kayıtlar:\n{records_text}")
         except FileNotFoundError:
             self.status_label.config(text="Henüz kayıt bulunmuyor!")
+
+    def jeton_islemi(self):
+        """Jeton işlemleri için yer tutucu."""
+        self.status_label.config(text="Jeton işlemi seçildi!")
+
+    def ayarlar_islemi(self):
+        """Ayarlar işlemleri için yer tutucu."""
+        self.status_label.config(text="Ayarlar işlemi seçildi!")
+
+    def gunsonu_raporu(self):
+        """Günsonu raporu işlemleri için yer tutucu."""
+        self.status_label.config(text="Günsonu raporu al seçildi!")
 
 # Uygulamayı başlat
 root = tk.Tk()
